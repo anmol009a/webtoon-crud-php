@@ -1,0 +1,26 @@
+[
+	{
+		"id" : 85,
+		"chapters" : [
+			{
+				"number" : 23,
+				"url" : "23.html"
+            }
+		],
+		"title" : "test11",
+		"url" : "test11.html",
+		"cover_url" : "test11.png"
+	},
+	{
+		"id" : 86,
+		"chapters" : [
+			{
+				"number" : 20,
+				"url" : "20.html"
+            }
+		],
+		"title" : "test12",
+		"url" : "test12.html",
+		"cover_url" : "test12.png"
+	}
+]

@@ -135,33 +135,6 @@ class WebtoonCrud
 }
 
 
-// $webtoon_data = [
-// 	(object) [
-// 		'id' => '85',
-// 		'chapters' => [
-// 			(object)[
-// 				'number' => 23,
-// 				'url' => '23.html'
-// 			]
-// 		],
-// 		'title' => 'test11',
-// 		'url' => 'test11.html',
-// 		'cover_url' => 'test11.png'
-// 	],
-// 	(object) [
-// 		'id' => '86',
-// 		'chapters' => [
-// 			(object)[
-// 				'number' => 20,
-// 				'url' => '20.html'
-// 			]
-// 		],
-// 		'title' => 'test12',
-// 		'url' => 'test12.html',
-// 		'cover_url' => 'test12.png'
-// 	]
-// ];
-
 // $query = "a";
 
 // $a = new WebtoonCrud($conn);
