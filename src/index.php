@@ -134,7 +134,6 @@ class WebtoonCrud
 	}
 }
 
-
 // $query = "a";
 
 // $a = new WebtoonCrud($conn);

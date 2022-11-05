@@ -2,3 +2,4 @@ vendor
 1.php
 .vscode
 db_connect.php
+composer.lock

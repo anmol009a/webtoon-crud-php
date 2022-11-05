@@ -1,0 +1,9 @@
+{
+    "name": "anmol009a/webtoon-crud-php",
+    "autoload": {
+        "psr-4": {
+            "Anmol009a\\WebtoonCrudPhp\\": "src/"
+        }
+    },
+    "require": {}
+}
