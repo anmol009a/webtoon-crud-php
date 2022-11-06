@@ -112,7 +112,7 @@ class WebtoonCrud
 	function get_webtoons(int $limit = 30, int $offset = 0)
 	{
 		// define sql stmt
-		$sql = "SELECT webtoons.id, title, webtoons.url, covers.url as cover_url FROM `webtoons` LEFT JOIN covers ON webtoons.id = covers.w_id ORDER BY webtoons.updated_at Desc LIMIT $limit;OFFSET $offset";
+		$sql = "SELECT webtoons.id, title, webtoons.url, covers.url as cover_url FROM `webtoons` LEFT JOIN covers ON webtoons.id = covers.w_id ORDER BY webtoons.updated_at Desc LIMIT $limit OFFSET $offset;";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
