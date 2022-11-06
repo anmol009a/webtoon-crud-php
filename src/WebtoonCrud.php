@@ -107,7 +107,7 @@ class WebtoonCrud
 
 	/**
 	 * @param int $limit no of webtoons
-	 * @return array of associated arrays
+	 * @return array of objects
 	 */
 	function get_webtoons(int $limit = 30)
 	{
@@ -124,14 +124,14 @@ class WebtoonCrud
 			$rows[$key]['chapters'] = $this->get_chapters($row['id']);
 		}
 
-		// return an array of associated arrays
-		return $rows;
+		// returns an array of objects
+		return json_decode(json_encode($rows));
 	}
 
 	/**
 	 * @param int $w_id webtoon id
 	 * @param int $limit no of chapters
-	 * @return array of associated arrays
+	 * @return array of objects
 	 */
 	function get_chapters(int $w_id, int $limit = 2)
 	{
@@ -145,13 +145,13 @@ class WebtoonCrud
 		// fetch result
 		$rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-		// return an array of associated arrays
-		return $rows;
+		// returns an array of objects
+		return json_decode(json_encode($rows));
 	}
 
 	/**
 	 * @param int $limit no of webtoons
-	 * @return array of associated arrays
+	 * @return array of objects
 	 */
 	function search_webtoon(string $query, int $limit = 10)
 	{
@@ -164,7 +164,7 @@ class WebtoonCrud
 		// fetch result
 		$rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-		// return an array of associated arrays
-		return $rows;
+		// returns an array of objects
+		return json_decode(json_encode($rows));
 	}
 }
