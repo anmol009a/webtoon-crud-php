@@ -1,6 +1,6 @@
 <?php
 
-// require_once('db_connect.php');
+namespace WebtoonCrud;
 
 class WebtoonCrud
 {
@@ -21,21 +21,27 @@ class WebtoonCrud
 		$this->connection = $conn;
 	}
 
+	/**
+	 * @todo insert cover with webtoon
+	 */
 	function insert_webtoons(array $webtoon_data)
 	{
-		// sql stmt
-		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";
-		// prepare stmt
-		$stmt = $this->connection->prepare($sql);
+		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
+		$stmt = $this->connection->prepare($sql);	// prepare stmt
 		// bind parameters
-		$stmt->bind_param("ss", $this->title, $this->url);
+		$stmt->bind_param("ss", $this->title, $this->url);	// bind parameters
 
-		//for each webtoon data execute sql 
+		//for each webtoon data
 		foreach ($webtoon_data as $webtoon) {
 			$this->title = $webtoon->title;
 			$this->url = $webtoon->url;
-			$stmt->execute();
+			$stmt->execute();	// execute sql
+
+			// get webtoon id and store it in $webtoon_data::$webtoon
+			$webtoon->id = $this->connection->insert_id;
 		}
+
+		$this->insert_covers($webtoon_data);	// insert cover url
 	}
 
 	function insert_chapters(array $webtoon_data)
@@ -59,6 +65,9 @@ class WebtoonCrud
 		}
 	}
 
+	/**
+	 * @param array $webtoon_data of objects with w_id not null
+	 */
 	function insert_covers(array $webtoon_data)
 	{
 		// define sql stmt
@@ -68,19 +77,42 @@ class WebtoonCrud
 
 		// for each webtoon insert cover
 		foreach ($webtoon_data as $webtoon) {
-			$this->w_id = $webtoon->id;   // webtoon id
-			$this->cover_url = $webtoon->cover_url;   // cover url
-			$stmt->execute();   // execute query
+			if ($webtoon->id) {
+				$this->w_id = $webtoon->id;   // webtoon id
+				$this->cover_url = $webtoon->cover_url;   // cover url
+				$stmt->execute();   // execute query
+			}
 		}
 	}
 
 	/**
-	 * @return array of associated arrays
+	 * @param array $webtoon_data of objects with w_id not null
 	 */
-	function get_webtoons()
+	function update_covers(array $webtoon_data)
 	{
 		// define sql stmt
-		$sql = "SELECT * FROM webtoons ORDER BY updated_at DESC LIMIT 30";
+		$sql = "UPDATE covers SET (url) VALUES ? where w_id = ?";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("si", $this->w_id, $this->cover_url); // bind parameters
+
+		// for each webtoon update cover
+		foreach ($webtoon_data as $webtoon) {
+			if ($webtoon->id) {
+				$this->w_id = $webtoon->id;   // webtoon id
+				$this->cover_url = $webtoon->cover_url;   // cover url
+				$stmt->execute();   // execute query
+			}
+		}
+	}
+
+	/**
+	 * @param int $limit no of webtoons
+	 * @return array of associated arrays
+	 */
+	function get_webtoons(int $limit = 30)
+	{
+		// define sql stmt
+		$sql = "SELECT * FROM webtoons ORDER BY updated_at DESC LIMIT $limit";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
@@ -97,13 +129,15 @@ class WebtoonCrud
 	}
 
 	/**
+	 * @param int $w_id webtoon id
+	 * @param int $limit no of chapters
 	 * @return array of associated arrays
 	 */
-	function get_chapters(int $w_id)
+	function get_chapters(int $w_id, int $limit = 2)
 	{
 
 		// define sql stmt
-		$sql = "SELECT * FROM chapters WHERE w_id = $w_id ORDER BY 'number' DESC LIMIT 2";
+		$sql = "SELECT * FROM chapters WHERE w_id = $w_id ORDER BY 'number' DESC LIMIT $limit";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
@@ -116,12 +150,13 @@ class WebtoonCrud
 	}
 
 	/**
+	 * @param int $limit no of webtoons
 	 * @return array of associated arrays
 	 */
-	function search_webtoon(string $query)
+	function search_webtoon(string $query, int $limit = 10)
 	{
 		// define sql stmt
-		$sql = "SELECT * FROM webtoons WHERE title LIKE '%$query%' ORDER BY updated_at DESC LIMIT 30";
+		$sql = "SELECT * FROM webtoons WHERE title LIKE '%$query%' ORDER BY updated_at DESC LIMIT $limit";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
@@ -133,13 +168,3 @@ class WebtoonCrud
 		return $rows;
 	}
 }
-
-// $query = "a";
-
-// $a = new WebtoonCrud($conn);
-// $a->insert_webtoons($webtoon_data);
-// $a->insert_chapters($webtoon_data);
-// $a->insert_covers($webtoon_data);
-// echo json_encode($a->get_webtoons($webtoon_data));
-// echo json_encode($a->get_chapters(1));
-// echo json_encode($a->search_webtoon($query));

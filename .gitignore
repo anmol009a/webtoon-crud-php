@@ -3,3 +3,4 @@ vendor
 .vscode
 db_connect.php
 composer.lock
+/index.php
