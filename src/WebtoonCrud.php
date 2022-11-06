@@ -112,7 +112,7 @@ class WebtoonCrud
 	function get_webtoons(int $limit = 30)
 	{
 		// define sql stmt
-		$sql = "SELECT * FROM webtoons ORDER BY updated_at DESC LIMIT $limit";
+		$sql = "SELECT webtoons.id, title, webtoons.url, covers.url as cover_url FROM `webtoons` LEFT JOIN covers ON webtoons.id = covers.w_id ORDER BY webtoons.updated_at Desc LIMIT $limit;";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
@@ -156,7 +156,9 @@ class WebtoonCrud
 	function search_webtoon(string $query, int $limit = 10)
 	{
 		// define sql stmt
-		$sql = "SELECT * FROM webtoons WHERE title LIKE '%$query%' ORDER BY updated_at DESC LIMIT $limit";
+		$sql = "SELECT webtoons.id, title, webtoons.url,covers.url as cover_url FROM `webtoons` 
+		LEFT JOIN 
+		covers ON webtoons.id = covers.w_id WHERE title LIKE '%$query%' ORDER BY webtoons.updated_at Desc LIMIT $limit;";
 
 		// execute query
 		$result = mysqli_query($this->connection, $sql);
