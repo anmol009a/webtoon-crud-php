@@ -24,6 +24,33 @@ class WebtoonCrud
 	/**
 	 * @todo insert cover with webtoon
 	 */
+	function insert_webtoons_data(array $webtoon_data)
+	{
+		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
+		$stmt = $this->connection->prepare($sql);	// prepare stmt
+		// bind parameters
+		$stmt->bind_param("ss", $this->title, $this->url);	// bind parameters
+
+		//for each webtoon data
+		foreach ($webtoon_data as $webtoon) {
+			$this->title = $webtoon->title;
+			$this->url = $webtoon->url;
+			$stmt->execute();	// execute sql
+		}
+
+		// $temp = $this->get_webtoons(count($webtoon_data));
+
+		// //for each webtoon data
+		// foreach ($webtoon_data as $key => $webtoon) {
+		// 	$webtoon->id = 
+		// }
+
+		$this->insert_covers($webtoon_data);	// insert cover url
+	}
+
+	/**
+	 * @todo insert cover with webtoon
+	 */
 	function insert_webtoons(array $webtoon_data)
 	{
 		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
@@ -126,6 +153,30 @@ class WebtoonCrud
 
 		// returns an array of objects
 		return json_decode(json_encode($rows));
+	}
+
+	/**
+	 * @return array of objects
+	 */
+	function get_webtoons_id(array $webtoon_data)
+	{
+		// define sql stmt
+		$sql = "SELECT id FROM `webtoons` WHERE title = ?;";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("s", $this->title); // bind parameters
+
+		foreach ($webtoon_data as $webtoon) {
+			$this->title = $webtoon->title;
+			// execute sql
+			$stmt->execute();
+			$result = $stmt->get_result();
+			if ($result) {
+				$webtoon->id = mysqli_fetch_column($result, 0);
+			}
+		}
+
+		// returns an array of objects
+		return json_decode(json_encode($webtoon_data));
 	}
 
 	/**

@@ -1,9 +1,19 @@
 {
-    "name": "anmol009a/webtoon-crud-php",
+    "name": "anmol009a/webtoon-crud",
+    "description": "todo",
+    "type": "library",
     "autoload": {
         "psr-4": {
-            "Anmol009a\\WebtoonCrudPhp\\": "src/"
+            "Anmol009a\\WebtoonCrud\\": "src/"
         }
     },
+    "authors": [
+        {
+            "name": "Anmol Sharma",
+            "email": "anmolsharma009a@gmail.com"
+        }
+    ],
+    "license": "",
+    "minimum-stability": "stable",
     "require": {}
 }
