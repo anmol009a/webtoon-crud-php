@@ -101,9 +101,9 @@ class WebtoonCrud
 	function insert_covers(array $webtoon_data)
 	{
 		// define sql stmt
-		$sql = "INSERT IGNORE INTO covers (w_id, url)  VALUES (?, ?) ON DUPLICATE KEY UPDATE";
+		$sql = "INSERT INTO covers (w_id, url)  VALUES (?, ?) ON DUPLICATE KEY UPDATE url = ?";
 		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("is", $this->w_id, $this->cover_url); // bind parameters
+		$stmt->bind_param("iss", $this->w_id, $this->cover_url, $this->cover_url); // bind parameters
 
 		// for each webtoon insert cover
 		foreach ($webtoon_data as $webtoon) {
