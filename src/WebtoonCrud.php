@@ -217,6 +217,10 @@ class WebtoonCrud
 		// fetch result
 		$rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
+		foreach ($rows as  $key => $row) {
+			$rows[$key]['chapters'] = $this->get_chapters($row['id']);
+		}
+
 		// returns an array of objects
 		return json_decode(json_encode($rows));
 	}
