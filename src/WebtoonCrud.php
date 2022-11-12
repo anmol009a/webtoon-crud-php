@@ -45,12 +45,10 @@ class WebtoonCrud
 				if ($webtoon->update_url) {
 					$this->update_webtoon_url($webtoon->id, $webtoon->url);
 				}
-			}
-			// new webtoon inserted
-			else {
+			} else {	// if new webtoon inserted
 				// insert chapters
 				foreach ($webtoon->chapters as $chapter) {
-					$webtoon->update_url =	$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
+					$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
 				}
 
 				// insert cover
@@ -77,7 +75,7 @@ class WebtoonCrud
 			// return webtoon id
 			return $this->connection->insert_id;
 		} catch (\mysqli_sql_exception $exception) {
-			echo $exception->getMessage();
+			echo $exception->getMessage() . "\n";
 		}
 		return -1;
 	}
