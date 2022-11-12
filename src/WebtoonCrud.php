@@ -40,8 +40,6 @@ class WebtoonCrud
 
 				// insert cover
 				$this->insert_cover($webtoon->id, $webtoon->cover_url);
-				var_dump($webtoon->id);
-				echo $webtoon->id . "\n";
 
 			} else {
 				// get webtoons id
@@ -179,7 +177,7 @@ class WebtoonCrud
 		$stmt->execute();
 		$result = $stmt->get_result();
 		if (mysqli_num_rows($result)) {
-			echo mysqli_fetch_column($result, 0);
+			return mysqli_fetch_column($result, 0);
 		}
 		return -1;
 	}
