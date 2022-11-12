@@ -183,30 +183,6 @@ class WebtoonCrud
 		return -1;
 	}
 
-	/**
-	 * Returns given webtoon data with webtoon id
-	 * @return array of objects
-	 */
-	function get_webtoons_id(array $webtoon_data)
-	{
-		// define sql stmt
-		$sql = "SELECT id FROM `webtoons` WHERE title = ?;";
-		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("s", $this->title); // bind parameters
-
-		foreach ($webtoon_data as $webtoon) {
-			$this->title = $webtoon->title;
-			// execute sql
-			$stmt->execute();
-			$result = $stmt->get_result();
-			if ($result) {
-				$webtoon->id = mysqli_fetch_column($result, 0);
-			}
-		}
-
-		// returns an array of objects
-		return $webtoon_data;
-	}
 
 	/**
 	 * @param int $w_id webtoon id
