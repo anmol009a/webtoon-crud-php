@@ -4,12 +4,12 @@ namespace WebtoonCrud;
 
 class WebtoonCrud
 {
-	protected $w_id;
-	protected $title;
-	protected $url;
-	protected $cover_url;
-	protected $number;
-	protected $chapter_url;
+	protected int $w_id;
+	protected string $title;
+	protected string $url;
+	protected string $cover_url;
+	protected int $number;
+	protected string $chapter_url;
 
 	/**
 	 * constructor
@@ -27,33 +27,68 @@ class WebtoonCrud
 	 */
 	function insert_webtoons_data(array $webtoon_data)
 	{
-		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
-		$stmt = $this->connection->prepare($sql);	// prepare stmt
-		$stmt->bind_param("ss", $this->title, $this->url);	// bind parameters
-
-		//for each webtoon data
+		// insert webtoons
 		foreach ($webtoon_data as $webtoon) {
-			$this->title = $webtoon->title;
-			$this->url = $webtoon->url;
-			$stmt->execute();	// execute sql
+			$webtoon->id =	$this->insert_webtoon($webtoon->title, $webtoon->url);
+
+			// if webtoon already exists
+			if (!$webtoon->id) {
+				// get webtoons id
+				$webtoon->id = $this->get_webtoon_id($webtoon->title);
+
+				// insert chapters
+				foreach ($webtoon->chapters as $chapter) {
+					$webtoon->update_url =	$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
+				}
+
+				// update webtoon url if new chapter inserted
+				if ($webtoon->update_url) {
+					$this->update_webtoon_url($webtoon->id, $webtoon->url);
+				}
+			}
+			// new webtoon inserted
+			else {
+				// insert chapters
+				foreach ($webtoon->chapters as $chapter) {
+					$webtoon->update_url =	$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
+				}
+
+				// insert cover
+				$this->insert_cover($webtoon->id, $webtoon->cover_url);
+			}
 		}
-
-		// get webtoons id
-		$webtoon_data = $this->get_webtoons_id($webtoon_data);
-
-		// insert chapters
-		$this->insert_chapters($webtoon_data);
-
-		// insert covers
-		$this->insert_covers($webtoon_data);
 	}
+
+	/**
+	 * Insert webtoon
+	 * @return int webtoon id on insert otherwise -1
+	 */
+	function insert_webtoon(string $title, string $url)
+	{
+		$sql = "INSERT INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
+		$stmt = $this->connection->prepare($sql);	// prepare stmt
+		// bind parameters
+		$stmt->bind_param("ss", $title, $url);	// bind parameters
+
+		try {
+			// execute sql
+			$stmt->execute();
+
+			// return webtoon id
+			return $this->connection->insert_id;
+		} catch (\mysqli_sql_exception $exception) {
+			echo $exception->getMessage();
+		}
+		return -1;
+	}
+
 
 	/**
 	 * @todo insert cover with webtoon
 	 */
 	function insert_webtoons(array $webtoon_data)
 	{
-		$sql = "INSERT IGNORE INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
+		$sql = "INSERT INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
 		$stmt = $this->connection->prepare($sql);	// prepare stmt
 		// bind parameters
 		$stmt->bind_param("ss", $this->title, $this->url);	// bind parameters
@@ -62,13 +97,52 @@ class WebtoonCrud
 		foreach ($webtoon_data as $webtoon) {
 			$this->title = $webtoon->title;
 			$this->url = $webtoon->url;
-			$stmt->execute();	// execute sql
 
-			// get webtoon id and store it in $webtoon_data::$webtoon
-			$webtoon->id = $this->connection->insert_id;
+			try {
+				// execute sql
+				$stmt->execute();
+				// get webtoon id and store it in $webtoon_data::$webtoon
+				$webtoon->id = $this->connection->insert_id;
+			} catch (\mysqli_sql_exception $exception) {
+				echo $exception->getMessage();
+			}
 		}
+	}
 
-		$this->insert_covers($webtoon_data);	// insert cover url
+	/**
+	 * Update webtoon url
+	 * @param int $id webtoon id
+	 * @param string $url webtoon url
+	 */
+	function update_webtoon_url(int $id, string $url)
+	{
+		$sql_update = "UPDATE webtoons SET url = ? WHERE id = ?;";
+		$stmt_update = $this->connection->prepare($sql_update);
+		$stmt_update->bind_param("si", $url, $id); // bind parameters
+
+		// update webtoon url
+		$stmt_update->execute();   // execute query
+	}
+
+	/**
+	 * Insert Chapter
+	 * @return bool if chapter inserted or not
+	 */
+	function insert_chapter(int $w_id, int $number, string $url)
+	{
+		// define sql stmt
+		$sql = "INSERT INTO chapters (w_id, number, url)  VALUES (?, ?, ?)";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("ids", $w_id, $number, $url); // bind parameters
+
+		try {
+			$stmt->execute();   // execute query
+			return true;
+		} catch (\mysqli_sql_exception $th) {
+			$this->connection->rollback();
+			echo $th->getMessage() . "\n";
+		}
+		return false;
 	}
 
 	/**
@@ -77,20 +151,48 @@ class WebtoonCrud
 	function insert_chapters(array $webtoon_data)
 	{
 		// define sql stmt
-		$sql = "INSERT IGNORE INTO chapters (w_id, number, url)  VALUES (?, ?, ?)";
+		$sql = "INSERT INTO chapters (w_id, number, url)  VALUES (?, ?, ?)";
 		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("ids", $this->w_id, $this->number, $this->url); // bind parameters
+		$stmt->bind_param("ids", $this->w_id, $this->number, $this->chapter_url); // bind parameters
 
 		// for each webtoon
 		foreach ($webtoon_data as $webtoon) {
-
+			$webtoon->update_url = false;
 			$this->w_id = $webtoon->id;   // webtoon id
 
 			// for every chapter
 			foreach ($webtoon->chapters as $chapter) {
+				// insert chapter
 				$this->number = $chapter->number; // chapter number
-				$this->url = $chapter->url;   // chapter url;
+				$this->chapter_url = $chapter->url;   // chapter url;
+
+				try {
+					$stmt->execute();   // execute query
+					$webtoon->update_url = true;
+				} catch (\mysqli_sql_exception $th) {
+					$this->connection->rollback();
+					echo $th->getMessage() . "\n";
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param int $w_id
+	 * @param string $url
+	 */
+	function insert_cover(int $w_id, string $url)
+	{
+		// define sql stmt
+		$sql = "INSERT INTO covers (w_id, url)  VALUES (?, ?) ON DUPLICATE KEY UPDATE url = ?";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("iss", $w_id, $url, $url); // bind parameters
+
+		if ($w_id and $url) {
+			try {
 				$stmt->execute();   // execute query
+			} catch (\mysqli_sql_exception $th) {
+				echo $th->getMessage() . "\n";
 			}
 		}
 	}
@@ -110,24 +212,14 @@ class WebtoonCrud
 			if ($webtoon->id and $webtoon->cover_url) {
 				$this->w_id = $webtoon->id;   // webtoon id
 				$this->cover_url = $webtoon->cover_url;   // cover url
-				$stmt->execute();   // execute query
+
+				try {
+					$stmt->execute();   // execute query
+				} catch (\mysqli_sql_exception $th) {
+					$this->connection->rollback();
+					echo $th->getMessage() . "\n";
+				}
 			}
-		}
-	}
-
-
-	/**
-	 * @param array $webtoon_data of objects with w_id
-	 */
-	function update_webtoon_url(int $w_id, string $url)
-	{
-		// define sql stmt
-		$sql = "UPDATE webtoons SET (url) VALUES ? where w_id = ?";
-		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("si", $w_id, $url); // bind parameters
-
-		if ($w_id and $url) {
-			$stmt->execute();   // execute query
 		}
 	}
 
@@ -152,6 +244,26 @@ class WebtoonCrud
 
 		// returns an array of objects
 		return json_decode(json_encode($rows));
+	}
+
+	/**
+	 * Get webtoon id
+	 * @return int webtoon id
+	 */
+	function get_webtoon_id(string $title)
+	{
+		// define sql stmt
+		$sql = "SELECT id FROM `webtoons` WHERE title = ?;";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("s", $title); // bind parameters
+
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if (mysqli_num_rows($result)) {
+			echo mysqli_fetch_column($result, 0);
+		}
+		return -1;
 	}
 
 	/**
