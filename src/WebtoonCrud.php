@@ -55,7 +55,7 @@ class WebtoonCrud
 				}
 
 				// update cover
-				$this->update_cover($webtoon->id, $webtoon->cover_urd);
+				$this->update_cover($webtoon->id, $webtoon->cover_url);
 			}
 		}
 	}
