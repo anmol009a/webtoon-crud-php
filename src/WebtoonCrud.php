@@ -84,32 +84,6 @@ class WebtoonCrud
 
 
 	/**
-	 * @todo insert cover with webtoon
-	 */
-	function insert_webtoons(array $webtoon_data)
-	{
-		$sql = "INSERT INTO webtoons (title, url)  VALUES (?, ?)";	// sql stmt		
-		$stmt = $this->connection->prepare($sql);	// prepare stmt
-		// bind parameters
-		$stmt->bind_param("ss", $this->title, $this->url);	// bind parameters
-
-		//for each webtoon data
-		foreach ($webtoon_data as $webtoon) {
-			$this->title = $webtoon->title;
-			$this->url = $webtoon->url;
-
-			try {
-				// execute sql
-				$stmt->execute();
-				// get webtoon id and store it in $webtoon_data::$webtoon
-				$webtoon->id = $this->connection->insert_id;
-			} catch (\mysqli_sql_exception $exception) {
-				echo $exception->getMessage();
-			}
-		}
-	}
-
-	/**
 	 * Update webtoon url
 	 * @param int $id webtoon id
 	 * @param string $url webtoon url
@@ -145,37 +119,6 @@ class WebtoonCrud
 		return false;
 	}
 
-	/**
-	 * @param array $webtoon_data of objects with w_id
-	 */
-	function insert_chapters(array $webtoon_data)
-	{
-		// define sql stmt
-		$sql = "INSERT INTO chapters (w_id, number, url)  VALUES (?, ?, ?)";
-		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("ids", $this->w_id, $this->number, $this->chapter_url); // bind parameters
-
-		// for each webtoon
-		foreach ($webtoon_data as $webtoon) {
-			$webtoon->update_url = false;
-			$this->w_id = $webtoon->id;   // webtoon id
-
-			// for every chapter
-			foreach ($webtoon->chapters as $chapter) {
-				// insert chapter
-				$this->number = $chapter->number; // chapter number
-				$this->chapter_url = $chapter->url;   // chapter url;
-
-				try {
-					$stmt->execute();   // execute query
-					$webtoon->update_url = true;
-				} catch (\mysqli_sql_exception $th) {
-					$this->connection->rollback();
-					echo $th->getMessage() . "\n";
-				}
-			}
-		}
-	}
 
 	/**
 	 * @param int $w_id
@@ -193,32 +136,6 @@ class WebtoonCrud
 				$stmt->execute();   // execute query
 			} catch (\mysqli_sql_exception $th) {
 				echo $th->getMessage() . "\n";
-			}
-		}
-	}
-
-	/**
-	 * @param array $webtoon_data of objects with w_id
-	 */
-	function insert_covers(array $webtoon_data)
-	{
-		// define sql stmt
-		$sql = "INSERT INTO covers (w_id, url)  VALUES (?, ?) ON DUPLICATE KEY UPDATE url = ?";
-		$stmt = $this->connection->prepare($sql);
-		$stmt->bind_param("iss", $this->w_id, $this->cover_url, $this->cover_url); // bind parameters
-
-		// for each webtoon insert cover
-		foreach ($webtoon_data as $webtoon) {
-			if ($webtoon->id and $webtoon->cover_url) {
-				$this->w_id = $webtoon->id;   // webtoon id
-				$this->cover_url = $webtoon->cover_url;   // cover url
-
-				try {
-					$stmt->execute();   // execute query
-				} catch (\mysqli_sql_exception $th) {
-					$this->connection->rollback();
-					echo $th->getMessage() . "\n";
-				}
 			}
 		}
 	}
