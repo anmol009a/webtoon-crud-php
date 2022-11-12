@@ -40,7 +40,6 @@ class WebtoonCrud
 
 				// insert cover
 				$this->insert_cover($webtoon->id, $webtoon->cover_url);
-
 			} else {
 				// get webtoons id
 				$webtoon->id = $this->get_webtoon_id($webtoon->title);
@@ -54,6 +53,9 @@ class WebtoonCrud
 				if ($webtoon->update_url) {
 					$this->update_webtoon_url($webtoon->id, $webtoon->url);
 				}
+
+				// update cover
+				$this->update_cover($webtoon->cover_url, $webtoon->id);
 			}
 		}
 	}
@@ -129,6 +131,26 @@ class WebtoonCrud
 		$sql = "INSERT INTO covers (w_id, url)  VALUES (?, ?) ON DUPLICATE KEY UPDATE url = ?";
 		$stmt = $this->connection->prepare($sql);
 		$stmt->bind_param("iss", $w_id, $url, $url); // bind parameters
+
+		if ($w_id and $url) {
+			try {
+				$stmt->execute();   // execute query
+			} catch (\mysqli_sql_exception $th) {
+				echo $th->getMessage() . "\n";
+			}
+		}
+	}
+
+	/**
+	 * @param int $w_id
+	 * @param string $url
+	 */
+	function update_cover(int $w_id, string $url)
+	{
+		// define sql stmt
+		$sql = "UPDATE covers SET url = ? WHERE w_id = ?";
+		$stmt = $this->connection->prepare($sql);
+		$stmt->bind_param("si", $url, $w_id); // bind parameters
 
 		if ($w_id and $url) {
 			try {
