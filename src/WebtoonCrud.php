@@ -31,8 +31,19 @@ class WebtoonCrud
 		foreach ($webtoon_data as $webtoon) {
 			$webtoon->id =	$this->insert_webtoon($webtoon->title, $webtoon->url);
 
-			// if webtoon already exists
-			if (!$webtoon->id) {
+			// if new webtoon inserted
+			if ($webtoon->id !== -1) {
+				// insert chapters
+				foreach ($webtoon->chapters as $chapter) {
+					$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
+				}
+
+				// insert cover
+				$this->insert_cover($webtoon->id, $webtoon->cover_url);
+				var_dump($webtoon->id);
+				echo $webtoon->id . "\n";
+
+			} else {
 				// get webtoons id
 				$webtoon->id = $this->get_webtoon_id($webtoon->title);
 
@@ -45,14 +56,6 @@ class WebtoonCrud
 				if ($webtoon->update_url) {
 					$this->update_webtoon_url($webtoon->id, $webtoon->url);
 				}
-			} else {	// if new webtoon inserted
-				// insert chapters
-				foreach ($webtoon->chapters as $chapter) {
-					$this->insert_chapter($webtoon->id, $chapter->number, $chapter->url);
-				}
-
-				// insert cover
-				$this->insert_cover($webtoon->id, $webtoon->cover_url);
 			}
 		}
 	}
